@@ -2,7 +2,6 @@ package com.angelina.shortlink.admin.controller;
 
 import com.angelina.shortlink.admin.common.convention.result.Result;
 import com.angelina.shortlink.admin.common.convention.result.Results;
-import com.angelina.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.angelina.shortlink.admin.dto.resp.UserRespDTO;
 import com.angelina.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +22,8 @@ public class UserController {
      * 根据用户名查询用户信息
      */
     @GetMapping("/api/short-link/admin/v1/user/{username}")
-    public Result<UserRespDTO> getUserByUsername(@PathVariable("username") String username){
+    public Result<UserRespDTO> getUserByUsername(@PathVariable("username") String username) {
         UserRespDTO result = userService.getUserByUsername(username);
-        if(result == null){
-            return new Result<UserRespDTO>().setCode(UserErrorCodeEnum.USER_NULL.code()).setMessage("用户查询为空");
-        }else {
-            return Results.success(result);
-        }
+        return Results.success(result);
     }
 }

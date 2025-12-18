@@ -25,7 +25,7 @@ import java.util.Optional;
  */
 @Component
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice // 用于统一处理所有 @RestController 的异常，并将返回值序列化为 JSON
 public class GlobalExceptionHandler {
 
     /**
@@ -46,10 +46,11 @@ public class GlobalExceptionHandler {
     /**
      * 拦截应用内抛出的异常
      */
-    @ExceptionHandler(value = {AbstractException.class})
+    @ExceptionHandler(value = { AbstractException.class })
     public Result abstractException(HttpServletRequest request, AbstractException ex) {
         if (ex.getCause() != null) {
-            log.error("[{}] {} [ex] {}", request.getMethod(), request.getRequestURL().toString(), ex.toString(), ex.getCause());
+            log.error("[{}] {} [ex] {}", request.getMethod(), request.getRequestURL().toString(), ex.toString(),
+                    ex.getCause());
             return Results.failure(ex);
         }
         log.error("[{}] {} [ex] {}", request.getMethod(), request.getRequestURL().toString(), ex.toString());
