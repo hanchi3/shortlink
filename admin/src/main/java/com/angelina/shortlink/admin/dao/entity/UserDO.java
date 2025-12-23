@@ -7,7 +7,7 @@ import lombok.Data;
 
 import java.util.Date;
 
-@TableName("Users")
+@TableName("t_user")
 @Data
 public class UserDO {
     /**
