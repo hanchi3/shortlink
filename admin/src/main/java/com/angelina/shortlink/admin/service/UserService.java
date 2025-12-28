@@ -1,7 +1,10 @@
 package com.angelina.shortlink.admin.service;
 
 import com.angelina.shortlink.admin.dao.entity.UserDO;
+import com.angelina.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.angelina.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.angelina.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.angelina.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.angelina.shortlink.admin.dto.resp.UserRespDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -32,4 +35,32 @@ public interface UserService extends IService<UserDO> {
      */
     void register(UserRegisterReqDTO requestParam);
 
+    /**
+     * 根据用户名修改用户
+     *
+     * @param requestParam 修改用户请求参数
+     */
+    void update(UserUpdateReqDTO requestParam);
+
+    /**
+     * 用户登录
+     * @param requestParam
+     * @return
+     */
+    UserLoginRespDTO login(UserLoginReqDTO requestParam);
+
+    /**
+     * 检查用户是否登录
+     * @param username 用户名
+     * @param token    用户登录 Token
+     * @return
+     */
+    Boolean checkLogin(String username, String token);
+
+    /**
+     * 退出登录
+     * @param username
+     * @param token
+     */
+    void logout(String username, String token);
 }
