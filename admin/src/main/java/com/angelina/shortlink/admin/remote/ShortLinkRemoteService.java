@@ -1,4 +1,4 @@
-package com.angelina.shortlink.admin.remote.dto;
+package com.angelina.shortlink.admin.remote;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;

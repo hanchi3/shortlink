@@ -1,7 +1,7 @@
 package com.angelina.shortlink.admin.controller;
 
 import com.angelina.shortlink.admin.common.convention.result.Result;
-import com.angelina.shortlink.admin.remote.dto.ShortLinkRemoteService;
+import com.angelina.shortlink.admin.remote.ShortLinkRemoteService;
 import com.angelina.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.angelina.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.angelina.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
