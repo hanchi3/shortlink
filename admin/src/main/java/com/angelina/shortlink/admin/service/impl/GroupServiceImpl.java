@@ -37,14 +37,22 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
 
     @Override
     public void saveGroup(String groupName) {
+        saveGroup(UserContext.getUsername(), groupName);
+    }
+
+    // 既可以满足：
+    // 1.用户登录以后，只显式传入分组名
+    // 2. 用户注册时，显式传入用户名，和“默认分组”分组名
+    @Override
+    public void saveGroup(String username, String groupName) {
         String gid;
         do {
             gid = RandomGenerator.generateRandom();
-        } while (!hasGid(gid));
+        } while (!hasGid(username, gid));
         GroupDO groupDO = GroupDO.builder()
                 .gid(gid)
                 .sortOrder(0)
-                .username(UserContext.getUsername())
+                .username(username)
                 .name(groupName)
                 .build();
         baseMapper.insert(groupDO);
@@ -105,10 +113,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         });
     }
 
-    private boolean hasGid(String gid) {
+    private boolean hasGid(String username, String gid) {
         LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
                 .eq(GroupDO::getGid, gid)
-                .eq(GroupDO::getUsername, UserContext.getUsername());
+                .eq(GroupDO::getUsername, Optional.ofNullable(username).orElse(UserContext.getUsername()));
         GroupDO hasGroupFlag = baseMapper.selectOne(queryWrapper);
         return hasGroupFlag == null;
     }
