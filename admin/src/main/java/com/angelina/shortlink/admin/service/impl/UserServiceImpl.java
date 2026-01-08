@@ -12,6 +12,7 @@ import com.angelina.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.angelina.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.angelina.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.angelina.shortlink.admin.dto.resp.UserRespDTO;
+import com.angelina.shortlink.admin.service.GroupService;
 import com.angelina.shortlink.admin.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -22,6 +23,7 @@ import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.angelina.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
 import static com.angelina.shortlink.admin.common.constant.RedisCacheConstant.USER_LOGIN_KEY;
-import static com.angelina.shortlink.admin.common.enums.UserErrorCodeEnum.USER_NAME_EXIST;
-import static com.angelina.shortlink.admin.common.enums.UserErrorCodeEnum.USER_SAVE_ERROR;
+import static com.angelina.shortlink.admin.common.enums.UserErrorCodeEnum.*;
 
 /**
  * 用户接口实现层
@@ -44,6 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
+    private final GroupService groupService;
 
     @Override
     public UserRespDTO getUserByUsername(String username) {
@@ -72,15 +74,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             throw new ClientException(USER_NAME_EXIST);
         }
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + requestParam.getUsername());
-        if (!lock.tryLock()) {
-            throw new ClientException(USER_NAME_EXIST);
-        }
         try {
-            int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
-            if (inserted < 1) {
-                throw new ClientException(USER_SAVE_ERROR);
+            if (lock.tryLock()) {
+                try {
+                    int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
+                    if (inserted < 1) {
+                        throw new ClientException(USER_SAVE_ERROR);
+                    }
+                } catch (DuplicateKeyException ex) {
+                    throw new ClientException(USER_EXIST);
+                }
+                userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
+                groupService.saveGroup("默认分组");
+                return;
             }
-            userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
+            throw new ClientException(USER_NAME_EXIST);
         } finally {
             lock.unlock();
         }
